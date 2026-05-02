@@ -1,2 +1,0 @@
-# LoteriaCostena
-Juego de loteria
