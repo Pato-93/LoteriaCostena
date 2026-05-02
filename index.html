@@ -3,278 +3,228 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lotería Costena</title>
+<title>Lotería Costeña</title>
 
 <style>
-body {
-font-family: Arial;
-text-align: center;
-margin: 0;
-background: radial-gradient(circle, #ff4e50, #f9d423);
-color: white;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#f7f2e7,#f2d7c6);
+  text-align:center;
+  color:#333;
 }
 
-h1 { margin: 10px; }
-
-button {
-padding: 10px 15px;
-margin: 5px;
-border: none;
-border-radius: 10px;
-cursor: pointer;
+h1{
+  margin:15px;
+  font-size:clamp(26px,5vw,44px);
 }
 
-.mode { background: #007bff; color: white; }
-.start { background: #28a745; color: white; }
-.reset { background: #dc3545; color: white; }
-
-#card {
-margin: 10px auto;
-width: 300px;
-height: 420px;
-background: white;
-color: black;
-border-radius: 15px;
-overflow: hidden;
-box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-transition: transform 0.2s;
+/* ===== BOTONES MODERNOS ===== */
+.btn{
+  background:#d32f2f;
+  color:white;
+  border:none;
+  border-radius:30px;
+  padding:12px 22px;
+  margin:6px;
+  font-size:clamp(14px,3vw,18px);
+  cursor:pointer;
+  box-shadow:0 6px 12px rgba(0,0,0,.25);
+  transition:.25s;
+}
+.btn:hover{
+  background:#b71c1c;
+  transform:translateY(-2px);
 }
 
-#card.pop {
-transform: scale(1.08);
+.btn.sec{
+  background:#388e3c;
+}
+.btn.sec:hover{
+  background:#1b5e20;
 }
 
-#card img {
-width: 100%;
-height: 80%;
-object-fit: cover;
+.btn.gray{
+  background:#455a64;
+}
+.btn.gray:hover{
+  background:#263238;
 }
 
-#name {
-font-size: 20px;
-padding: 10px;
-font-weight: bold;
+.hidden{display:none}
+
+/* ===== CANTADOR ===== */
+.carta-grande{
+  max-width:90vw;
+  max-height:60vh;
+  margin:auto;
+}
+.carta-grande img{
+  width:100%;
+  height:auto;
+  border-radius:14px;
+  border:4px solid #333;
+}
+h2{
+  font-size:clamp(18px,4vw,28px);
 }
 
-#tabla {
-display: grid;
-grid-template-columns: repeat(4, 75px);
-gap: 5px;
-justify-content: center;
-margin-top: 10px;
+/* ===== JUGADOR ===== */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  max-width:500px;
+  margin:20px auto;
+  padding:5px;
+}
+.cell{
+  position:relative;
+  border:2px solid #333;
+  border-radius:10px;
+  overflow:hidden;
+  cursor:pointer;
+  background:white;
+}
+.cell img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.cell.marked::after{
+  content:"🫘";
+  position:absolute;
+  font-size:clamp(26px,6vw,42px);
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
 }
 
-.celda {
-width: 75px;
-height: 75px;
-background: white;
-color: black;
-font-size: 10px;
-display: flex;
-align-items: center;
-justify-content: center;
-border-radius: 6px;
-cursor: pointer;
-position: relative;
+/* ===== MUSICA ===== */
+.music-box{
+  background:white;
+  padding:12px;
+  border-radius:14px;
+  max-width:420px;
+  margin:10px auto;
+  box-shadow:0 4px 10px rgba(0,0,0,.2);
 }
-
-.frijol {
-position: absolute;
-width: 18px;
-height: 18px;
-background: green;
-border-radius: 50%;
-top: 5px;
-right: 5px;
-display: none;
-}
-
-.marcada .frijol {
-display: block;
-}
-
-#win {
-font-size: 30px;
-color: gold;
-margin-top: 10px;
-display: none;
+.music-box input{
+  width:95%;
+  padding:8px;
+  border-radius:10px;
+  border:1px solid #aaa;
+  font-size:14px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎪 Lotería Costena</h1>
+<h1>🎴 Lotería Costeña 🎴</h1>
 
-<div>
-<button class="mode" onclick="modo='El cantador'; showCantador()">🎤 Cantador</button>
-<button class="mode" onclick="modo='Dame una tablita'; showJugador()">🎮 Tablitar</button>
+<button class="btn" onclick="mostrarCantador()">🎤 Cantalas manito</button>
+<button class="btn sec" onclick="mostrarJugador()">🟩 Dame una tabla manito</button>
+
+
+<div id="player"></div>
+
+<!-- CANTADOR -->
+<div id="cantador" class="hidden">
+  <div class="carta-grande">
+    <img id="imgCarta">
+  </div>
+  <h2 id="nomCarta"></h2>
+  <button class="btn gray" onclick="anterior()">⬅ Anterior</button>
+  <button class="btn gray" onclick="siguiente()">➡ Siguiente</button><br>
+  <button class="btn" onclick="nuevoJuego()">🃏 Nuevo juego</button>
 </div>
 
-<!-- 🎤 CANTADOR -->
-<div id="cantador" style="display:none;">
-⏱️ Segundos:
-<input type="number" id="speed" value="3" min="1" max="10">
-
-<div id="card">
-<img id="img" src="https://placehold.co/300x300?text=Loteria">
-<div id="name">Listo para jugar</div>
+<!-- JUGADOR -->
+<div id="jugador" class="hidden">
+  <div class="grid" id="tabla"></div>
+  <button class="btn sec" onclick="nuevaTabla()">🔄 Otra tablita </button>
 </div>
-
-<button class="start" onclick="startGame()">Iniciar</button>
-<button class="reset" onclick="resetGame()">Reiniciar</button>
-</div>
-
-<!-- 🎮 JUGADOR -->
-<div id="jugador" style="display:none;">
-<h3>🎮 Tu tabla</h3>
-<div id="tabla"></div>
-<div id="win">🏆 ¡LOTERÍA!</div>
-</div>
-
-<!-- 🎵 música feria -->
-<audio id="music" loop>
-<source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8b5d1b5a1.mp3" type="audio/mp3">
-</audio>
 
 <script>
-const cartas = [
-"El Pato","La itzel","El coco","La lola","El Benja",
-"La Vero","La Escalera","La Botella","El Barril","La Muerte",
-"El Corazón","El Sol","La Luna","La Rosa","El Mundo",
-"La Mano","El Venado","El Pájaro","La Estrella","El Cazo"
+// ===== CARTAS =====
+const cartas=[
+ {n:"El Gallo",d:"El que le cantó a San Pedro",i:"img/el_gallo.png"},
+ {n:"El Diablito",d:"Pórtate bien cuatito",i:"img/el_diablito.png"},
+ {n:"La Dama",d:"Puliendo el paso",i:"img/la_dama.png"},
+ {n:"El Catrín",d:"Don Ferruco en la Alameda",i:"img/el_catrin.png"},
+ {n:"El Paraguas",d:"Para el sol y para el agua",i:"img/el_paraguas.png"},
+ {n:"La Sirena",d:"Medio cuerpo de sirena",i:"img/la_sirena.png"},
+ {n:"La Escalera",d:"Súbeme paso a pasito",i:"img/la_escalera.png"},
+ {n:"La Botella",d:"La herramienta del borracho",i:"img/la_botella.png"},
+ {n:"El Barril",d:"Tanto tomo que se me acabó",i:"img/el_barril.png"},
+ {n:"El Árbol",d:"El que a buen árbol se arrima",i:"img/el_arbol.png"},
+ {n:"El Melón",d:"Me lo cortas o me lo dejas",i:"img/el_melon.png"},
+ {n:"El Valiente",d:"¿Por qué le corres cobarde?",i:"img/el_valiente.png"},
+ {n:"El Gorrito",d:"Ponle su gorrito al nene",i:"img/el_gorrito.png"},
+ {n:"La Muerte",d:"La muerte tilica y flaca",i:"img/la_muerte.png"},
+ {n:"La Pera",d:"El que espera desespera",i:"img/la_pera.png"},
+ {n:"El Corazón",d:"No me extrañes corazón",i:"img/el_corazon.png"}
 ];
 
-let disponibles = [];
-let interval = null;
-let modo = "";
+let juego=[...cartas], idx=0;
+const barajar=new Audio("https://www.soundjay.com/misc/sounds/shuffling-cards-1.mp3");
 
-/* 🔊 voz feria mejorada */
-function hablar(texto) {
-speechSynthesis.cancel();
-
-const msg = new SpeechSynthesisUtterance("¡" + texto + "!");
-msg.lang = "es-MX";
-
-// 🎙️ estilo cantador
-msg.rate = 0.88;
-msg.pitch = 1.25;
-msg.volume = 1;
-
-const voces = speechSynthesis.getVoices();
-const voz = voces.find(v => v.lang.includes("es"));
-if (voz) msg.voice = voz;
-
-speechSynthesis.speak(msg);
+// ===== VOZ =====
+function hablar(t){
+ const u=new SpeechSynthesisUtterance(t);
+ u.lang="es-MX";u.rate=0.85;
+ speechSynthesis.speak(u);
 }
 
-/* 🖼️ imagen */
-function img(c) {
-return "https://placehold.co/400x400/ffffff/000000?text=" + encodeURIComponent(c);
+// ===== VISTAS =====
+function mostrarCantador(){
+ cantador.classList.remove("hidden");
+ jugador.classList.add("hidden");
+ mostrarCarta();
+}
+function mostrarJugador(){
+ jugador.classList.remove("hidden");
+ cantador.classList.add("hidden");
+ nuevaTabla();
 }
 
-/* 🎤 activar audio + música */
-function startMusic() {
-document.getElementById("music").volume = 0.25;
-document.getElementById("music").play();
-
-const msg = new SpeechSynthesisUtterance("¡Lotería iniciada!");
-msg.lang = "es-MX";
-speechSynthesis.speak(msg);
+// ===== CANTADOR =====
+function mostrarCarta(){
+ const c=juego[idx];
+ imgCarta.src=c.i;
+ nomCarta.innerText=c.n;
+ hablar(c.n+", "+c.d);
+}
+function siguiente(){if(idx<juego.length-1){idx++;mostrarCarta();}}
+function anterior(){if(idx>0){idx--;mostrarCarta();}}
+function nuevoJuego(){
+ barajar.play();
+ juego=[...cartas].sort(()=>Math.random()-0.5);
+ idx=0;
+ setTimeout(mostrarCarta,800);
 }
 
-/* ===================== CANTADOR ===================== */
-function showCantador() {
-document.getElementById("cantador").style.display = "block";
-document.getElementById("jugador").style.display = "none";
+// ===== JUGADOR =====
+function nuevaTabla(){
+ tabla.innerHTML="";
+ [...cartas].sort(()=>Math.random()-0.5).slice(0,16).forEach(c=>{
+  const d=document.createElement("div");
+  d.className="cell";
+  d.innerHTML=`${c.i}`;
+  d.onclick=()=>marcar(d);
+  tabla.appendChild(d);
+ });
+}
+function marcar(c){
+ c.classList.toggle("marked");
+ if(document.querySelectorAll(".marked").length===16){
+  hablar("¡Loteriiiiiaaaaa manitooooooooo ganeeeeeeee!");
+  alert("¡LOTERÍA!");
+ }
 }
 
-function startGame() {
-if (interval) return;
 
-startMusic();
-
-if (disponibles.length === 0) disponibles = [...cartas];
-
-let speed = parseInt(document.getElementById("speed").value) || 3;
-
-interval = setInterval(() => {
-
-if (disponibles.length === 0) {
-clearInterval(interval);
-interval = null;
-document.getElementById("name").innerText = "🎉 Fin del juego";
-document.getElementById("music").pause();
-return;
-}
-
-let i = Math.floor(Math.random() * disponibles.length);
-let card = disponibles.splice(i,1)[0];
-
-document.getElementById("name").innerText = card;
-document.getElementById("img").src = img(card);
-
-document.getElementById("card").classList.add("pop");
-setTimeout(()=>document.getElementById("card").classList.remove("pop"),200);
-
-hablar(card);
-
-}, speed * 1000);
-}
-
-function resetGame() {
-clearInterval(interval);
-interval = null;
-disponibles = [];
-speechSynthesis.cancel();
-document.getElementById("music").pause();
-document.getElementById("music").currentTime = 0;
-}
-
-/* ===================== JUGADOR ===================== */
-function showJugador() {
-document.getElementById("cantador").style.display = "none";
-document.getElementById("jugador").style.display = "block";
-
-buildTable();
-}
-
-/* 🎴 tabla jugador */
-function buildTable() {
-let tabla = document.getElementById("tabla");
-tabla.innerHTML = "";
-document.getElementById("win").style.display = "none";
-
-let mix = [...cartas].sort(()=>Math.random()-0.5).slice(0,16);
-
-mix.forEach(c => {
-let div = document.createElement("div");
-div.className = "celda";
-div.innerHTML = c + `<div class="frijol"></div>`;
-
-div.onclick = () => {
-div.classList.toggle("marcada");
-checkWin();
-};
-
-tabla.appendChild(div);
-});
-}
-
-/* 🏆 ganador */
-function checkWin() {
-let marcadas = document.querySelectorAll(".marcada").length;
-
-if (marcadas === 16) {
-document.getElementById("win").style.display = "block";
-
-const msg = new SpeechSynthesisUtterance("¡LOTERÍA! ¡TENEMOS GANADOR!");
-msg.lang = "es-MX";
-speechSynthesis.speak(msg);
-}
-}
-
-window.speechSynthesis.onvoiceschanged = () => {};
 </script>
 
 </body>
