@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lotería Casino Feria</title>
+
+<style>
+body {
+font-family: Arial;
+text-align: center;
+margin: 0;
+background: radial-gradient(circle, #ff4e50, #f9d423);
+color: white;
+}
+
+h1 { margin: 10px; }
+
+button {
+padding: 10px 15px;
+margin: 5px;
+border: none;
+border-radius: 10px;
+cursor: pointer;
+}
+
+.mode { background: #007bff; color: white; }
+.start { background: #28a745; color: white; }
+.reset { background: #dc3545; color: white; }
+
+#card {
+margin: 10px auto;
+width: 300px;
+height: 420px;
+background: white;
+color: black;
+border-radius: 15px;
+overflow: hidden;
+box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+transition: transform 0.2s;
+}
+
+#card.pop {
+transform: scale(1.08);
+}
+
+#card img {
+width: 100%;
+height: 80%;
+object-fit: cover;
+}
+
+#name {
+font-size: 20px;
+padding: 10px;
+font-weight: bold;
+}
+
+#tabla {
+display: grid;
+grid-template-columns: repeat(4, 75px);
+gap: 5px;
+justify-content: center;
+margin-top: 10px;
+}
+
+.celda {
+width: 75px;
+height: 75px;
+background: white;
+color: black;
+font-size: 10px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 6px;
+cursor: pointer;
+position: relative;
+}
+
+.frijol {
+position: absolute;
+width: 18px;
+height: 18px;
+background: green;
+border-radius: 50%;
+top: 5px;
+right: 5px;
+display: none;
+}
+
+.marcada .frijol {
+display: block;
+}
+
+#win {
+font-size: 30px;
+color: gold;
+margin-top: 10px;
+display: none;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎪 Lotería Casino Feria FULL PRO</h1>
+
+<div>
+<button class="mode" onclick="modo='cantador'; showCantador()">🎤 Cantador</button>
+<button class="mode" onclick="modo='jugador'; showJugador()">🎮 Jugador</button>
+</div>
+
+<!-- 🎤 CANTADOR -->
+<div id="cantador" style="display:none;">
+⏱️ Segundos:
+<input type="number" id="speed" value="3" min="1" max="10">
+
+<div id="card">
+<img id="img" src="https://placehold.co/300x300?text=Loteria">
+<div id="name">Listo para jugar</div>
+</div>
+
+<button class="start" onclick="startGame()">Iniciar</button>
+<button class="reset" onclick="resetGame()">Reiniciar</button>
+</div>
+
+<!-- 🎮 JUGADOR -->
+<div id="jugador" style="display:none;">
+<h3>🎮 Tu tabla</h3>
+<div id="tabla"></div>
+<div id="win">🏆 ¡LOTERÍA!</div>
+</div>
+
+<!-- 🎵 música feria -->
+<audio id="music" loop>
+<source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8b5d1b5a1.mp3" type="audio/mp3">
+</audio>
+
+<script>
+const cartas = [
+"El Gallo","El Diablo","La Dama","El Catrín","El Borracho",
+"La Sirena","La Escalera","La Botella","El Barril","La Muerte",
+"El Corazón","El Sol","La Luna","La Rosa","El Mundo",
+"La Mano","El Venado","El Pájaro","La Estrella","El Cazo"
+];
+
+let disponibles = [];
+let interval = null;
+let modo = "";
+
+/* 🔊 voz feria mejorada */
+function hablar(texto) {
+speechSynthesis.cancel();
+
+const msg = new SpeechSynthesisUtterance("¡" + texto + "!");
+msg.lang = "es-MX";
+
+// 🎙️ estilo cantador
+msg.rate = 0.88;
+msg.pitch = 1.25;
+msg.volume = 1;
+
+const voces = speechSynthesis.getVoices();
+const voz = voces.find(v => v.lang.includes("es"));
+if (voz) msg.voice = voz;
+
+speechSynthesis.speak(msg);
+}
+
+/* 🖼️ imagen */
+function img(c) {
+return "https://placehold.co/400x400/ffffff/000000?text=" + encodeURIComponent(c);
+}
+
+/* 🎤 activar audio + música */
+function startMusic() {
+document.getElementById("music").volume = 0.25;
+document.getElementById("music").play();
+
+const msg = new SpeechSynthesisUtterance("¡Lotería iniciada!");
+msg.lang = "es-MX";
+speechSynthesis.speak(msg);
+}
+
+/* ===================== CANTADOR ===================== */
+function showCantador() {
+document.getElementById("cantador").style.display = "block";
+document.getElementById("jugador").style.display = "none";
+}
+
+function startGame() {
+if (interval) return;
+
+startMusic();
+
+if (disponibles.length === 0) disponibles = [...cartas];
+
+let speed = parseInt(document.getElementById("speed").value) || 3;
+
+interval = setInterval(() => {
+
+if (disponibles.length === 0) {
+clearInterval(interval);
+interval = null;
+document.getElementById("name").innerText = "🎉 Fin del juego";
+document.getElementById("music").pause();
+return;
+}
+
+let i = Math.floor(Math.random() * disponibles.length);
+let card = disponibles.splice(i,1)[0];
+
+document.getElementById("name").innerText = card;
+document.getElementById("img").src = img(card);
+
+document.getElementById("card").classList.add("pop");
+setTimeout(()=>document.getElementById("card").classList.remove("pop"),200);
+
+hablar(card);
+
+}, speed * 1000);
+}
+
+function resetGame() {
+clearInterval(interval);
+interval = null;
+disponibles = [];
+speechSynthesis.cancel();
+document.getElementById("music").pause();
+document.getElementById("music").currentTime = 0;
+}
+
+/* ===================== JUGADOR ===================== */
+function showJugador() {
+document.getElementById("cantador").style.display = "none";
+document.getElementById("jugador").style.display = "block";
+
+buildTable();
+}
+
+/* 🎴 tabla jugador */
+function buildTable() {
+let tabla = document.getElementById("tabla");
+tabla.innerHTML = "";
+document.getElementById("win").style.display = "none";
+
+let mix = [...cartas].sort(()=>Math.random()-0.5).slice(0,16);
+
+mix.forEach(c => {
+let div = document.createElement("div");
+div.className = "celda";
+div.innerHTML = c + `<div class="frijol"></div>`;
+
+div.onclick = () => {
+div.classList.toggle("marcada");
+checkWin();
+};
+
+tabla.appendChild(div);
+});
+}
+
+/* 🏆 ganador */
+function checkWin() {
+let marcadas = document.querySelectorAll(".marcada").length;
+
+if (marcadas === 16) {
+document.getElementById("win").style.display = "block";
+
+const msg = new SpeechSynthesisUtterance("¡LOTERÍA! ¡TENEMOS GANADOR!");
+msg.lang = "es-MX";
+speechSynthesis.speak(msg);
+}
+}
+
+window.speechSynthesis.onvoiceschanged = () => {};
+</script>
+
+</body>
+</html>
