@@ -143,7 +143,7 @@ h2{
 <!-- JUGADOR -->
 <div id="jugador" class="hidden">
   <div class="grid" id="tabla"></div>
-  <button class="btn sec" onclick="nuevaTabla()">🔄 Otra tablita </button>
+  <button class="btn sec" onclick="nuevaTabla()">🔄 Otra tablita esa no me gusto </button>
 </div>
 
 <script>
@@ -205,17 +205,26 @@ function nuevoJuego(){
  setTimeout(mostrarCarta,800);
 }
 
+
 // ===== JUGADOR =====
 function nuevaTabla(){
- tabla.innerHTML="";
- [...cartas].sort(()=>Math.random()-0.5).slice(0,16).forEach(c=>{
-  const d=document.createElement("div");
-  d.className="cell";
-  d.innerHTML=`${c.i}`;
-  d.onclick=()=>marcar(d);
-  tabla.appendChild(d);
- });
+  tabla.innerHTML = "";
+
+  [...cartas].sort(() => Math.random() - 0.5).slice(0,16).forEach(c => {
+    const d = document.createElement("div");
+    d.className = "cell";
+
+    const img = document.createElement("img");
+    img.src = c.i;      
+    img.alt = c.n;
+
+    d.appendChild(img);
+    d.onclick = () => marcar(d);
+
+    tabla.appendChild(d);
+  });
 }
+
 function marcar(c){
  c.classList.toggle("marked");
  if(document.querySelectorAll(".marked").length===16){
